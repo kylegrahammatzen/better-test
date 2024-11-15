@@ -3,8 +3,8 @@
 import { Button } from "@/components/ui/button";
 import { Github } from "lucide-react";
 import { Google } from "@/app/components/Google";
-import { authClient } from "@/lib/auth-client";
 import { useToast } from "@/hooks/use-toast";
+import { authClient } from "@/lib/auth/client";
 
 type SocialSignInButtonsProps = {
   isLoading: boolean;

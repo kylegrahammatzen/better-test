@@ -13,9 +13,9 @@ import {
 } from "@/components/ui/card";
 import { Loader2, Mail } from "lucide-react";
 import { PasswordInput } from "@/app/components/PasswordInput";
-import { authClient } from "@/lib/auth-client";
 import { useToast } from "@/hooks/use-toast";
 import { SocialSignInButtons } from "@/app/components/SocialSignInButtons";
+import { authClient } from "@/lib/auth/client";
 
 const SignUpForm = () => {
   const [email, setEmail] = useState("");

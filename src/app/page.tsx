@@ -28,7 +28,7 @@ export default function Home() {
 
       <div className="flex flex-col sm:flex-row gap-4">
         <Button asChild size="lg" className="group">
-          <Link href="/signin">
+          <Link href="protected">
             Try the Demo
             <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
           </Link>

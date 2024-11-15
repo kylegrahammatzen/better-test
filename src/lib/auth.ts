@@ -1,18 +1,10 @@
 import { betterAuth } from "better-auth";
-import { genericOAuth } from "better-auth/plugins";
-import { createSteamAuth } from "./plugins/steam-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "./db";
 import { schema } from "./db/schema";
-
-const steamConfig = {
-  clientSecret: process.env.STEAM_API_KEY!,
-  redirectUri: `${process.env.BETTER_AUTH_URL}/api/auth/oauth2/callback/steam`,
-  allowedHosts: ["steamcommunity.com"],
-  forceHttps: true,
-};
-
-export const steamProvider = createSteamAuth(steamConfig);
+import { linear } from "./plugins/linear";
+import { resend } from "./resend";
+import { LinearLoginCodeEmail } from "./emails/linear-code";
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -22,23 +14,28 @@ export const auth = betterAuth({
     },
   }),
   plugins: [
-    genericOAuth({
-      config: [
-        {
-          providerId: steamProvider.id,
-          clientId: "steam",
-          clientSecret: process.env.STEAM_API_KEY!,
-          type: "oauth2",
-          authorizationUrl: steamProvider.createAuthorizationURL(),
-          tokenUrl: "https://steamcommunity.com/openid/login",
-          userInfoUrl:
-            "https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/",
-          redirectURI: steamConfig.redirectUri,
-          scopes: [],
-          pkce: false,
-          getUserInfo: steamProvider.getUserInfo,
-        },
-      ],
+    linear({
+      sendLinearAuth: async ({ email, magicLink, otp, type }, request) => {
+        const { data, error } = await resend.emails.send({
+          from: "Kyle from Linear <hello@kylegm.com>",
+          to: email,
+          subject:
+            type === "sign-in"
+              ? "Sign in to Linear"
+              : "Verify your email for Linear",
+          react: LinearLoginCodeEmail({ validationCode: otp, magicLink, type }),
+        });
+
+        if (error) {
+          console.error("Failed to send email:", error);
+          throw new Error("Failed to send email");
+        }
+
+        console.log("Email sent:", data);
+      },
+      otpLength: 6,
+      disableSignUp: false,
+      expiresIn: 300,
     }),
   ],
 });
